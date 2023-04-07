@@ -1,0 +1,6 @@
+build/**
+include/SDL/**
+lib/**
+**.dll
+**.exe
+.vscode/**
