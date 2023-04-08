@@ -1,22 +1,23 @@
 #include "main.h"
+#include "scenes.h"
+
+#include <stdio.h>
 
 void switch_scene(struct AppContext *context, enum AppState state);
 void render(struct AppContext *context);
-
-void _initINIT(struct AppContext *context);
-void _initEDIT(struct AppContext *context);
-void _initPLAY(struct AppContext *context);
-
-void __test_button_callback(void);
-void ui_dummy_callback(void) {}
-
 
 void event_loop(void) {
     int running = 1;
     // Initialize context wrapper
     struct AppContext context;
-    context.buttons = malloc(sizeof(struct UIButton*)*20);
-    context.numButtons = 0;
+    context.scene_info = malloc(sizeof(union SceneInfo));
+    context.scene = malloc(sizeof(struct UIScene));
+    context.scene->buttons = malloc(sizeof(struct UIButton*)*MAX_BUTTONS);
+    context.scene->texts = malloc(sizeof(struct UIText*)*MAX_MESSAGES);
+    context.scene->numButtons = 0;
+    context.scene->numTexts = 0;
+    context.scene->freeButtonIndex = -1;
+    context.scene->freeTextIndex = -1;
 
     // Set up initial scene
     switch_scene(&context, INIT);
@@ -44,67 +45,68 @@ void render(struct AppContext *context) {
     SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 255);
     SDL_RenderFillRect(mainRenderer, &(SDL_Rect){ 0, 0, BASE_WIDTH, BASE_HEIGHT });
     // Render buttons on screen (TODO: extend to more UI elements)
-    for(size_t i = 0; i < context->numButtons; i++) {
-        struct UIButton *button = context->buttons[i];
+    for(size_t i = 0; i < context->scene->numButtons + (context->scene->freeButtonIndex >= 0 ? 1 : 0); i++) {
+        struct UIButton *button = context->scene->buttons[i];
+        if(button == NULL) continue;
         ui_draw_button(button, context);
+    }
+    for(size_t i = 0; i < context->scene->numTexts + (context->scene->freeTextIndex >= 0 ? 1 : 0); i++) {
+        struct UIText *text = context->scene->texts[i];
+        if(text == NULL) continue;
+        text_write(textRenderer, text->text, mainRenderer, &text->anchor, text->align);
     }
 
     SDL_RenderPresent(mainRenderer);
 }
 
 void switch_scene(struct AppContext *context, enum AppState state) {
-    for(size_t i = 0; i < context->numButtons; i++) free(context->buttons[i]);
+    for(size_t i = 0; i < context->scene->numButtons; i++) {
+        free(context->scene->buttons[i]->text);
+        free(context->scene->buttons[i]);
+    }
+    for(size_t i = 0; i < context->scene->numTexts; i++) {
+        free(context->scene->texts[i]->text);
+        free(context->scene->texts[i]);
+    }
+    switch(context->currentState) {
+        case INIT:
+            free(context->scene_info->init);
+            break;
+        case EDIT:
+            free(context->scene_info->edit);
+            break;
+        case PLAY:
+            free(context->scene_info->play);
+            break;
+    }
+    free(context->scene_info);
+    context->scene_info = malloc(sizeof(union SceneInfo));
+
+    context->scene->numButtons = 0;
+    context->scene->numTexts = 0;
+    context->scene->freeButtonIndex = -1;
+    context->scene->freeTextIndex = -1;
 
     switch(state) {
         case INIT:
+            context->scene_info->init = malloc(sizeof(struct InitSceneInfo));
             _initINIT(context);
             break;
         case EDIT:
+            context->scene_info->edit = malloc(sizeof(struct EditSceneInfo));
             _initEDIT(context);
             break;
         case PLAY:
+            context->scene_info->play = malloc(sizeof(struct PlaySceneInfo));
             _initPLAY(context);
             break;
     }
 }
 
-// Insert a button into the scene and increment the button counter
-void insert_button(struct AppContext *context, char *text, struct UIColor neutralColor, struct UIColor hoverColor, int x, int y, int w, int h, void (*on_click)(void)) {
-    context->buttons[context->numButtons++] = malloc(sizeof(struct UIButton));
-    ui_create_button(
-        context->buttons[context->numButtons-1],
-        text,
-        neutralColor,
-        hoverColor,
-        x,y,w,h,
-        on_click
-    );
-}
-
-void _initINIT(struct AppContext *context) {
-    context->numButtons = 0;
-
-    insert_button(
-        context,
-        "Hello!", 
-        (struct UIColor){255,0,0,255}, (struct UIColor){128,0,0,255}, 
-        100,100,64,16, 
-        &__test_button_callback
-    );
-    insert_button(
-        context,
-        "Button 2", 
-        (struct UIColor){0,255,0,255}, (struct UIColor){0,128,0,255},
-        24,24,48,48,
-        &ui_dummy_callback
-    );
-
-    context->currentState = INIT;
-}
 
 void _initEDIT(struct AppContext *context) {}
 void _initPLAY(struct AppContext *context) {}
 
-void __test_button_callback(void) {
+void __test_button_callback(struct UIButtonCallbackInfo info) {
     SDL_SetWindowTitle(mainWindow, "THIS IS A TEST");
 }
