@@ -1,2 +1,2 @@
-rm out.exe
+rm dist/out.exe
 rm build/*

@@ -1,8 +1,8 @@
 cl ^
 /I"include" ^
-/Fe"out.exe" ^
+/Fe"dist/out.exe" ^
 /Fo"build/" ^
-*.c ^
+src/*.c ^
 lib/* ^
 Shell32.lib ^
 /link ^
