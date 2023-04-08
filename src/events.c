@@ -46,32 +46,7 @@ void render(struct AppContext *context) {
     // Render buttons on screen (TODO: extend to more UI elements)
     for(size_t i = 0; i < context->numButtons; i++) {
         struct UIButton *button = context->buttons[i];
-        SDL_Rect buttonBounds = { button->x, button->y, button->w, button->h };
-        if(SDL_PointInRect(&(SDL_Point){ context->mouseMove.x, context->mouseMove.y }, &buttonBounds)) { // mouse is over button
-            SDL_SetRenderDrawColor(mainRenderer,
-                button->hoverColor.r,
-                button->hoverColor.g,
-                button->hoverColor.b,
-                button->hoverColor.a
-            );
-            if(context->mouseClick.button == SDL_BUTTON_LEFT && context->mouseClick.state == SDL_PRESSED) {
-                button->clicked = 1;
-            }
-            if(button->clicked && context->mouseClick.button == SDL_BUTTON_LEFT && context->mouseClick.state == SDL_RELEASED) {
-                button->clicked = 0;
-                button->on_click();
-            }
-        } else {
-            SDL_SetRenderDrawColor(mainRenderer,
-                button->neutralColor.r,
-                button->neutralColor.g,
-                button->neutralColor.b,
-                button->neutralColor.a
-            );
-            button->clicked = 0;
-        }
-        
-        SDL_RenderFillRect(mainRenderer, &buttonBounds);
+        ui_draw_button(button, context);
     }
 
     SDL_RenderPresent(mainRenderer);

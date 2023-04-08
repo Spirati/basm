@@ -4,6 +4,7 @@
 #include "SDL/SDL.h"
 #include "SDL_image/SDL_image.h"
 #include "events.h"
+#include "text.h"
 
 #define ASPECT_RATIO    (256.0/224.0)
 #define SCALE           2
@@ -17,5 +18,6 @@ void _quit_SDL(int error);
 
 extern SDL_Window *mainWindow;
 extern SDL_Renderer *mainRenderer;
+extern struct TextRenderer *textRenderer;
 
 #endif

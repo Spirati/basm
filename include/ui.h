@@ -22,5 +22,5 @@ struct UIScene {
 };
 
 void ui_create_button(struct UIButton *button, char *text, struct UIColor neutralColor, struct UIColor hoverColor, int x, int y, int w, int h, void (*on_click)(void));
-
+void ui_draw_button(struct UIButton *button, struct AppContext *context);
 #endif

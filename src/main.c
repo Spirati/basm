@@ -3,6 +3,7 @@
 
 SDL_Window *mainWindow;
 SDL_Renderer *mainRenderer;
+struct TextRenderer *textRenderer;
 
 int main(int argc, char **argv) {
     // Initialize SDL and window environment
@@ -21,6 +22,8 @@ int main(int argc, char **argv) {
     SDL_RenderPresent(mainRenderer);
     SDL_ShowWindow(mainWindow);
 
+    textRenderer = text_create_renderer(mainRenderer);
+
     event_loop();
 
     _quit_SDL(0);
@@ -36,5 +39,8 @@ void _quit_SDL(int error) {
     if(error != 0) {
         printf("SDL error: %s\n", SDL_GetError());
     }
+    SDL_DestroyRenderer(mainRenderer);
+    SDL_DestroyWindow(mainWindow);
+    text_destroy_renderer(textRenderer);
     SDL_Quit();
 }
