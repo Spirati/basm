@@ -18,7 +18,8 @@ struct UIText {
 enum AppState {
     INIT,
     EDIT,
-    PLAY
+    PLAY,
+    APP_ERROR
 };
 
 struct UIScene {
@@ -39,13 +40,17 @@ struct EditSceneInfo {
     size_t dummy;
 };
 struct PlaySceneInfo {
-    size_t dummy;
+    char *filename;
+};
+struct ErrorSceneInfo {
+    char *error;
 };
 
 union SceneInfo {
     struct InitSceneInfo *init;
     struct EditSceneInfo *edit;
     struct PlaySceneInfo *play;
+    struct ErrorSceneInfo *error;
 };
 
 struct AppContext {
@@ -54,6 +59,7 @@ struct AppContext {
     struct UIScene *scene;
     SDL_MouseMotionEvent mouseMove;
     SDL_MouseButtonEvent mouseClick;
+    int shutdown;
 };
 
 struct UIButtonCallbackInfo {
@@ -90,5 +96,7 @@ void delete_button(struct AppContext *context, size_t index);
 void ui_create_button(struct UIButton *button, char *text, struct UIColor neutralColor, struct UIColor hoverColor, int x, int y, int w, int h, UIButtonCallback *callback);
 void ui_create_text(struct UIText *uitext, char *text, SDL_Rect anchor, enum TextAlign align);
 void ui_draw_button(struct UIButton *button, struct AppContext *context);
+
+void event_switch_scene(struct AppContext *context, enum AppState state, union SceneInfo *pass);
 
 #endif

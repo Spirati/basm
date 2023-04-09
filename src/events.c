@@ -3,13 +3,13 @@
 
 #include <stdio.h>
 
-void switch_scene(struct AppContext *context, enum AppState state);
 void render(struct AppContext *context);
 
 void event_loop(void) {
     int running = 1;
     // Initialize context wrapper
     struct AppContext context;
+    context.shutdown = 0;
     context.scene_info = malloc(sizeof(union SceneInfo));
     context.scene = malloc(sizeof(struct UIScene));
     context.scene->buttons = malloc(sizeof(struct UIButton*)*MAX_BUTTONS);
@@ -20,8 +20,9 @@ void event_loop(void) {
     context.scene->freeTextIndex = -1;
 
     // Set up initial scene
-    switch_scene(&context, INIT);
+    event_switch_scene(&context, INIT, NULL);
     while(running) {
+        if(context.shutdown) running = 0;
         SDL_Event event;
         while(SDL_PollEvent(&event)) {
             switch(event.type) {
@@ -35,7 +36,8 @@ void event_loop(void) {
                     context.mouseClick = event.button;
             }
         }
-        render(&context);
+        if(running)
+            render(&context);
     }
 }
 
@@ -59,14 +61,12 @@ void render(struct AppContext *context) {
     SDL_RenderPresent(mainRenderer);
 }
 
-void switch_scene(struct AppContext *context, enum AppState state) {
+void event_switch_scene(struct AppContext *context, enum AppState state, union SceneInfo *pass) {
     for(size_t i = 0; i < context->scene->numButtons; i++) {
-        free(context->scene->buttons[i]->text);
-        free(context->scene->buttons[i]);
+        delete_button(context, i);
     }
     for(size_t i = 0; i < context->scene->numTexts; i++) {
-        free(context->scene->texts[i]->text);
-        free(context->scene->texts[i]);
+        delete_text(context, i);
     }
     switch(context->currentState) {
         case INIT:
@@ -78,9 +78,16 @@ void switch_scene(struct AppContext *context, enum AppState state) {
         case PLAY:
             free(context->scene_info->play);
             break;
+        case APP_ERROR:
+            free(context->scene_info->error);
+            break;
     }
     free(context->scene_info);
-    context->scene_info = malloc(sizeof(union SceneInfo));
+    if(pass != NULL) {
+        context->scene_info = pass;
+    } else {
+        context->scene_info = malloc(sizeof(union SceneInfo));
+    }
 
     context->scene->numButtons = 0;
     context->scene->numTexts = 0;
@@ -89,24 +96,54 @@ void switch_scene(struct AppContext *context, enum AppState state) {
 
     switch(state) {
         case INIT:
-            context->scene_info->init = malloc(sizeof(struct InitSceneInfo));
-            _initINIT(context);
+            if(pass == NULL)
+                context->scene_info->init = malloc(sizeof(struct InitSceneInfo));
+            context->shutdown = _initINIT(context);
             break;
         case EDIT:
-            context->scene_info->edit = malloc(sizeof(struct EditSceneInfo));
-            _initEDIT(context);
+            if(pass == NULL)
+                context->scene_info->edit = malloc(sizeof(struct EditSceneInfo));
+            context->shutdown = _initEDIT(context);
             break;
         case PLAY:
-            context->scene_info->play = malloc(sizeof(struct PlaySceneInfo));
-            _initPLAY(context);
+            if(pass == NULL)
+                context->scene_info->play = malloc(sizeof(struct PlaySceneInfo));
+            context->shutdown = _initPLAY(context);
+            break;
+        case APP_ERROR:
+            if(pass == NULL)
+                context->scene_info->error = malloc(sizeof(struct ErrorSceneInfo));
+            context->shutdown = _initERROR(context);
             break;
     }
 }
 
-
-void _initEDIT(struct AppContext *context) {}
-void _initPLAY(struct AppContext *context) {}
+int _initEDIT(struct AppContext *context) { return 0; }
 
 void __test_button_callback(struct UIButtonCallbackInfo info) {
     SDL_SetWindowTitle(mainWindow, "THIS IS A TEST");
+}
+
+void __error_button_callback(struct UIButtonCallbackInfo info) {
+    info.context->shutdown = 1;
+}
+
+union SceneInfo *event_generate_error(char *error) {
+    union SceneInfo *pass = malloc(sizeof(union SceneInfo));
+    struct ErrorSceneInfo *passError = malloc(sizeof(struct ErrorSceneInfo));
+    passError->error = malloc(1024*sizeof(char));
+    strncpy(passError->error, error, 1024);
+    pass->error = passError;
+    return pass;
+}
+
+int _initERROR(struct AppContext *context) {
+    insert_text(context, TEXT_RED "An error has occured!", (SDL_Rect){ 0, 16, BASE_WIDTH, 0 }, CENTER);
+    insert_text(context, context->scene_info->error->error, (SDL_Rect){ 32, 48, 0, 0 }, LEFT);
+
+    insert_button(context, "Quit", (struct UIColor){ 255, 0, 0, 255 }, (struct UIColor){ 196, 0, 0, 255 }, 32, BASE_HEIGHT-64, 64, 32, &__error_button_callback);
+
+    context->currentState = APP_ERROR;
+
+    return 0;
 }

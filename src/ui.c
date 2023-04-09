@@ -86,8 +86,8 @@ size_t insert_button(struct AppContext *context, char *text, struct UIColor neut
     
 }
 size_t insert_text(struct AppContext *context, char *text, SDL_Rect anchor, enum TextAlign align) {
-    char *textc = malloc(1024*sizeof(char));
-    strncpy(textc, text, 1024);
+    char *textc = malloc(4096*sizeof(char));
+    strncpy(textc, text, 4096);
 
     if(context->scene->freeTextIndex >= 0) {
         int insertedAt = context->scene->freeTextIndex;

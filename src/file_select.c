@@ -2,17 +2,23 @@
 #include "scenes.h"
 #include "def.h"
 #include "text.h"
-#include <windows.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <windows.h>
 #include <string.h>
 
 void ui_dummy_callback(struct UIButtonCallbackInfo info) {}
-void scenes_init_open_file(char *filename) {}
+
+void scenes_init_open_file(struct AppContext *context, char *filename) {
+    union SceneInfo *pass = malloc(sizeof(union SceneInfo));
+    struct PlaySceneInfo *passPlay = malloc(sizeof(struct PlaySceneInfo));
+    passPlay->filename = malloc(1024*sizeof(char));
+    strncpy(passPlay->filename, filename, 1024);
+    pass->play = passPlay;
+    event_switch_scene(context, PLAY, pass);
+}
 
 void scenes_init_load_file_callback(struct UIButtonCallbackInfo info) {
-    printf("%s\n",info.button->text);
-    scenes_init_open_file(info.button->text);
+    scenes_init_open_file(info.context, info.button->text);
 }
 
 void scenes_init_list_programs(struct UIButtonCallbackInfo info) {
@@ -84,18 +90,22 @@ void scenes_init_list_programs(struct UIButtonCallbackInfo info) {
     FindClose(hFind);
 }
 
+void error_button(struct UIButtonCallbackInfo info) {
+    event_switch_scene(info.context, APP_ERROR, event_generate_error("This is an example of error text."));
+}
 
-void _initINIT(struct AppContext *context) {
+
+int _initINIT(struct AppContext *context) {
     insert_button_row(
         context,
         3,
         (struct UIButton[]){
             (struct UIButton){ 
-                "Button 1",
+                "error moment",
                 (struct UIColor){ 255, 0, 0, 255 },
                 (struct UIColor){ 128, 0, 0, 255 },
                 0,0,0,0,
-                &ui_dummy_callback
+                &error_button
             },
             (struct UIButton){ 
                 "Refresh",
@@ -123,4 +133,6 @@ void _initINIT(struct AppContext *context) {
     });
 
     context->currentState = INIT;
+
+    return 0;
 }

@@ -95,7 +95,7 @@ int _calculate_char_offset(char c) {
         case '&':
             return O + 34;
     }
-    return 0;
+    return _calculate_char_offset(' ');
 }
 
 // only LEFT supports line breaks for now
@@ -103,16 +103,25 @@ void text_write(struct TextRenderer *textRenderer, char *text, SDL_Renderer *ren
     size_t c;
     size_t line = 0;
     size_t col = 0;
+    SDL_SetTextureColorMod(textRenderer->font, 255, 255, 255);
     switch(align) {
         case LEFT:
             for(c = 0; text[c] != '\0'; c++) {
-                if(text[c] == '\n') {
-                    col = 0;
-                    line++;
+                if(c == '\xff') { // start of color block
+                    // SDL_SetTextureColorMod(textRenderer->font, 255, 255, 255);
+                    char *color = text+c+1; // pretend it's an array
+                    SDL_SetTextureColorMod(textRenderer->font, color[0], color[1], color[2]);
+                    c += 3;
                 } else {
-                    SDL_RenderCopy(renderer, textRenderer->font, &(SDL_Rect){ 5*_calculate_char_offset(text[c]), 0, 5, 9 }, &(SDL_Rect){ anchor->x+5*col, anchor->y+9*line, 5, 9 });
-                    col++;
+                    if(text[c] == '\n') {
+                        col = 0;
+                        line++;
+                    } else {
+                        SDL_RenderCopy(renderer, textRenderer->font, &(SDL_Rect){ 5*_calculate_char_offset(text[c]), 0, 5, 9 }, &(SDL_Rect){ anchor->x+5*col, anchor->y+9*line, 5, 9 });
+                        col++;
+                    }
                 }
+                
             }
             break;
         case RIGHT:
@@ -125,11 +134,23 @@ void text_write(struct TextRenderer *textRenderer, char *text, SDL_Renderer *ren
             break;
         case CENTER:
             c = 0;
-            while(text[c++] != '\0') {}
-            c--;
-            int gap = (anchor->w-5*c)/2;
+            int count = 0;
+            while(text[c++] != '\0') {
+                if(text[c] == '\xff') {c+=3; continue;}
+                count++;
+            }
+            count--;
+            int gap = (anchor->w-5*count)/2;
+            int col = 0;
             for(c = 0; text[c] != '\0'; c++) {
-                SDL_RenderCopy(renderer, textRenderer->font, &(SDL_Rect){ 5*_calculate_char_offset(text[c]), 0, 5, 9 }, &(SDL_Rect){ gap+anchor->x+5*c, anchor->y, 5, 9 });
+                if(text[c] == '\xff') {
+                    // SDL_SetTextureColorMod(textRenderer->font, 255, 255, 255);
+                    char *color = text+c+1;
+                    SDL_SetTextureColorMod(textRenderer->font, color[0], color[1], color[2]);
+                    c += 3;
+                } else {
+                    SDL_RenderCopy(renderer, textRenderer->font, &(SDL_Rect){ 5*_calculate_char_offset(text[c]), 0, 5, 9 }, &(SDL_Rect){ gap+anchor->x+5*(col++), anchor->y, 5, 9 });
+                }
             }
             break;
     }

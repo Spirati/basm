@@ -8,4 +8,10 @@
 #define BASE_WIDTH      ((int)((float)BASE_HEIGHT*ASPECT_RATIO))
 #define WIDTH           (BASE_WIDTH*SCALE)
 
+#define TEXT_PINK   "\xff\xff\xa8\xd1"
+#define TEXT_WHITE  "\xff\xff\xff\xff"
+#define TEXT_RED    "\xff\xff\x61\x61"
+#define TEXT_CYAN   "\xff\xc7\xf9\xff"
+#define TEXT_ORANGE "\xff\xff\xa2\x69"
+
 #endif
