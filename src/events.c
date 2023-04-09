@@ -34,6 +34,12 @@ void event_loop(void) {
                     break;
                 case SDL_MOUSEBUTTONDOWN: case SDL_MOUSEBUTTONUP:
                     context.mouseClick = event.button;
+                case SDL_KEYDOWN:
+                    switch(context.currentState) {
+                        case EDIT:
+                            _keyhandlerEDIT(&context, event.key);
+                    }
+                    break;
             }
         }
         if(running)
@@ -118,7 +124,7 @@ void event_switch_scene(struct AppContext *context, enum AppState state, union S
     }
 }
 
-int _initEDIT(struct AppContext *context) { return 0; }
+int _initPLAY(struct AppContext *context) { return 0; }
 
 void __test_button_callback(struct UIButtonCallbackInfo info) {
     SDL_SetWindowTitle(mainWindow, "THIS IS A TEST");
@@ -137,11 +143,16 @@ union SceneInfo *event_generate_error(char *error) {
     return pass;
 }
 
+void __error_button_file_select(struct UIButtonCallbackInfo info) {
+    event_switch_scene(info.context, INIT, NULL);
+}
+
 int _initERROR(struct AppContext *context) {
     insert_text(context, TEXT_RED "An error has occured!", (SDL_Rect){ 0, 16, BASE_WIDTH, 0 }, CENTER);
     insert_text(context, context->scene_info->error->error, (SDL_Rect){ 32, 48, 0, 0 }, LEFT);
 
     insert_button(context, "Quit", (struct UIColor){ 255, 0, 0, 255 }, (struct UIColor){ 196, 0, 0, 255 }, 32, BASE_HEIGHT-64, 64, 32, &__error_button_callback);
+    insert_button(context, "File select", (struct UIColor){ 255, 0, 0, 255 }, (struct UIColor) { 196, 0, 0, 255 }, 100, BASE_HEIGHT-64, 72, 32, &__error_button_file_select);
 
     context->currentState = APP_ERROR;
 

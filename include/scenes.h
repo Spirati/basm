@@ -8,6 +8,8 @@ int _initEDIT(struct AppContext *context);
 int _initPLAY(struct AppContext *context);
 int _initERROR(struct AppContext *context);
 
+void _keyhandlerEDIT(struct AppContext *context, SDL_KeyboardEvent event);
+
 union SceneInfo *event_generate_error(char *error);
 
 void __test_button_callback(struct UIButtonCallbackInfo info);

@@ -2,7 +2,7 @@
 #define __BC23_DEF
 
 #define ASPECT_RATIO    (256.0/224.0)
-#define SCALE           2
+#define SCALE           4
 #define BASE_HEIGHT     224
 #define HEIGHT          (BASE_HEIGHT*SCALE)
 #define BASE_WIDTH      ((int)((float)BASE_HEIGHT*ASPECT_RATIO))
@@ -13,5 +13,7 @@
 #define TEXT_RED    "\xff\xff\x61\x61"
 #define TEXT_CYAN   "\xff\xc7\xf9\xff"
 #define TEXT_ORANGE "\xff\xff\xa2\x69"
+#define TEXT_GREY   "\xff\xc2\xc2\xc2"
+#define TEXT_DARK_GREY "\xff\x75\x75\x75"
 
 #endif

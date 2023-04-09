@@ -66,6 +66,8 @@ int _calculate_char_offset(char c) {
             return O + 17;
         case '.':
             return O + 18;
+        case ',':
+            return O + 20;
         case ';':
             return O + 21;
         case ':':
@@ -106,22 +108,38 @@ void text_write(struct TextRenderer *textRenderer, char *text, SDL_Renderer *ren
     SDL_SetTextureColorMod(textRenderer->font, 255, 255, 255);
     switch(align) {
         case LEFT:
+            // for(c = 0; text[c] != '\0'; c++) {
+            //     if(c == '\xff') { // start of color block
+            //         char *color = text+c+1; // pretend it's an array
+            //         SDL_SetTextureColorMod(textRenderer->font, color[0], color[1], color[2]);
+            //         c += 3;
+            //     } else {
+            //         if(text[c] == '\n') {
+            //             col = 0;
+            //             line++;
+            //         } else {
+            //             SDL_RenderCopy(renderer, textRenderer->font, &(SDL_Rect){ 5*_calculate_char_offset(text[c]), 0, 5, 9 }, &(SDL_Rect){ anchor->x+5*(col++), anchor->y+9*line, 5, 9 });
+            //         }
+            //     }
+                
+            // }
+            // break;
+            col = 0;
+            line = 0;
             for(c = 0; text[c] != '\0'; c++) {
-                if(c == '\xff') { // start of color block
+                if(text[c] == '\xff') {
                     // SDL_SetTextureColorMod(textRenderer->font, 255, 255, 255);
-                    char *color = text+c+1; // pretend it's an array
+                    char *color = text+c+1;
                     SDL_SetTextureColorMod(textRenderer->font, color[0], color[1], color[2]);
                     c += 3;
                 } else {
                     if(text[c] == '\n') {
                         col = 0;
                         line++;
-                    } else {
-                        SDL_RenderCopy(renderer, textRenderer->font, &(SDL_Rect){ 5*_calculate_char_offset(text[c]), 0, 5, 9 }, &(SDL_Rect){ anchor->x+5*col, anchor->y+9*line, 5, 9 });
-                        col++;
+                        continue;
                     }
+                    SDL_RenderCopy(renderer, textRenderer->font, &(SDL_Rect){ 5*_calculate_char_offset(text[c]), 0, 5, 9 }, &(SDL_Rect){ anchor->x+5*(col++), anchor->y+10*line, 5, 9 });
                 }
-                
             }
             break;
         case RIGHT:

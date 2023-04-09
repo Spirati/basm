@@ -36,11 +36,17 @@ struct InitSceneInfo {
     int warning_message_index;
     int toolbar_end;
 };
-struct EditSceneInfo {
+struct PlaySceneInfo {
     size_t dummy;
 };
-struct PlaySceneInfo {
+struct EditSceneInfo {
     char *filename;
+    char *fulltext;
+    char *showntext;
+    int scrollStart;
+    int scrollEnd;
+    size_t filelength;
+    size_t linecount;
 };
 struct ErrorSceneInfo {
     char *error;

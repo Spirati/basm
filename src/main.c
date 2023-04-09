@@ -17,7 +17,12 @@ int main(int argc, char **argv) {
         _quit_SDL(1);
     
     SDL_SetWindowPosition(mainWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-    SDL_SetWindowTitle(mainWindow, "Bitcamp 2023");
+    SDL_SetWindowTitle(mainWindow, "BASM Editor");
+
+    SDL_Surface *icon = IMG_Load("resource/icon.png");
+    SDL_SetWindowIcon(mainWindow, icon);
+    SDL_FreeSurface(icon);
+
     SDL_RenderSetLogicalSize(mainRenderer, BASE_WIDTH, BASE_HEIGHT);
     SDL_RenderPresent(mainRenderer);
     SDL_ShowWindow(mainWindow);

@@ -10,11 +10,11 @@ void ui_dummy_callback(struct UIButtonCallbackInfo info) {}
 
 void scenes_init_open_file(struct AppContext *context, char *filename) {
     union SceneInfo *pass = malloc(sizeof(union SceneInfo));
-    struct PlaySceneInfo *passPlay = malloc(sizeof(struct PlaySceneInfo));
-    passPlay->filename = malloc(1024*sizeof(char));
-    strncpy(passPlay->filename, filename, 1024);
-    pass->play = passPlay;
-    event_switch_scene(context, PLAY, pass);
+    struct EditSceneInfo *passEdit = malloc(sizeof(struct EditSceneInfo));
+    passEdit->filename = malloc(1024*sizeof(char));
+    strncpy(passEdit->filename, filename, 1024);
+    pass->edit = passEdit;
+    event_switch_scene(context, EDIT, pass);
 }
 
 void scenes_init_load_file_callback(struct UIButtonCallbackInfo info) {
@@ -43,7 +43,7 @@ void scenes_init_list_programs(struct UIButtonCallbackInfo info) {
         return;
     }
 
-    #define ROW_WIDTH 3
+    #define ROW_WIDTH 2
     struct UIButton *buttonBuffer = malloc(ROW_WIDTH*sizeof(struct UIButton));
     char **stringBuffer = malloc(ROW_WIDTH*sizeof(char *));
     for(size_t i = 0; i < ROW_WIDTH; i++) {
@@ -56,14 +56,14 @@ void scenes_init_list_programs(struct UIButtonCallbackInfo info) {
         buttonBuffer[buttonIndex] = (struct UIButton){
             stringBuffer[buttonIndex],
             (struct UIColor){ 0, 0, 0, 255 },
-            (struct UIColor){ 32, 32, 32, 255 },
+            (struct UIColor){ 64, 64, 64, 255 },
             0,0,0,0,
             &scenes_init_load_file_callback
         };
         buttonIndex++;
         if(buttonIndex == ROW_WIDTH) { // flush button buffer and create row
             insert_button_row(
-                info.context, ROW_WIDTH, buttonBuffer, (SDL_Rect){ 0, 48+16*(row++), BASE_WIDTH, 9 }, 0
+                info.context, ROW_WIDTH, buttonBuffer, (SDL_Rect){ 0, 48+24*(row++), BASE_WIDTH, 24 }, 0
             );
             buttonIndex = 0;
         }
@@ -80,7 +80,7 @@ void scenes_init_list_programs(struct UIButtonCallbackInfo info) {
             };
         }
         insert_button_row(
-            info.context, ROW_WIDTH, buttonBuffer, (SDL_Rect){ 0, 48+16*(row++), BASE_WIDTH, 16 }, 0
+            info.context, ROW_WIDTH, buttonBuffer, (SDL_Rect){ 0, 48+24*(row++), BASE_WIDTH, 24 }, 0
         );
     }
     for(size_t i = 0; i < ROW_WIDTH; i++) {
@@ -98,29 +98,29 @@ void error_button(struct UIButtonCallbackInfo info) {
 int _initINIT(struct AppContext *context) {
     insert_button_row(
         context,
-        3,
+        1,
         (struct UIButton[]){
-            (struct UIButton){ 
-                "error moment",
-                (struct UIColor){ 255, 0, 0, 255 },
-                (struct UIColor){ 128, 0, 0, 255 },
-                0,0,0,0,
-                &error_button
-            },
+            // (struct UIButton){ 
+            //     "error moment",
+            //     (struct UIColor){ 255, 0, 0, 255 },
+            //     (struct UIColor){ 128, 0, 0, 255 },
+            //     0,0,0,0,
+            //     &error_button
+            // },
             (struct UIButton){ 
                 "Refresh",
                 (struct UIColor){ 0, 255, 0, 255 },
-                (struct UIColor){ 0, 128, 0, 255 },
+                (struct UIColor){ 0, 196, 0, 255 },
                 0,0,0,0,
                 &scenes_init_list_programs
-            },
-            (struct UIButton){ 
-                "Button 3",
-                (struct UIColor){ 255, 0, 0, 255 },
-                (struct UIColor){ 128, 0, 0, 255 },
-                0,0,0,0,
-                &ui_dummy_callback
             }
+            // (struct UIButton){ 
+            //     "Button 3",
+            //     (struct UIColor){ 255, 0, 0, 255 },
+            //     (struct UIColor){ 128, 0, 0, 255 },
+            //     0,0,0,0,
+            //     &ui_dummy_callback
+            // }
         },
         (SDL_Rect){ 0, 0, BASE_WIDTH, 32 },
         1

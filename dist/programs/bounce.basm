@@ -1,0 +1,21 @@
+ldx b11111111
+lda 7
+
+load_sprite:
+stx xf000,a
+dec
+jnz load_sprite
+
+ldx 0
+stx xf008
+stx xf009
+ldx 255
+stx xf00a
+ldx 0
+stx xf00b
+stx xf00c
+ldx b11111111
+lda 7
+
+loop:
+jmp loop

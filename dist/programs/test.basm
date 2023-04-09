@@ -1,3 +1,4 @@
 abc:
    lda 10
-   sta 23
+   sta b101010
+   lda #10
